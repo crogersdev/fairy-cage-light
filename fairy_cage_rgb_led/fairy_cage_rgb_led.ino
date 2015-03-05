@@ -9,8 +9,17 @@ void setup()
   pinMode(BLUE_PIN, OUTPUT);
 }
 
-void hsv2rgb(const float h, const float s, const float v, unsigned int& r, unsigned int& g, unsigned int &b)
+void hsv2rgb(float h, float s, float v, unsigned int& r, unsigned int& g, unsigned int &b)
 {
+  if (v < 0)
+    v = 0;
+  if (v > 1.0)
+    v = 1.0;
+  if (s < 0)
+    s = 0;
+  if (s > 1.0)
+    s = 1.0;
+  
   float C = s * v;
   float hPrime = h / 60.0;
   float X = C * (1.0 - fabs(fmod(hPrime, 2.0) - 1.0));
@@ -53,14 +62,42 @@ void hsv2rgb(const float h, const float s, const float v, unsigned int& r, unsig
     b = 255 * (X + m);
   }
   else
-  {} 
+  {}
 }
 
-void lightLED(unsigned int r, unsigned int g, unsigned int b)
+void lightLED(const unsigned int r, const unsigned int g, const unsigned int b)
 {
   analogWrite(RED_PIN, 255 - r);
   analogWrite(GREEN_PIN, 255 - g);
   analogWrite(BLUE_PIN, 255 - b);
+}
+
+void fadeToWhite(const unsigned int hue)
+{
+  delay(100);
+  unsigned int r, g, b;
+  
+  float deltaRate = 1.1;
+  float initDelta = .00000000001;
+  float delta = initDelta;
+  
+  for (float sat = 1.0; sat > 0; sat -= delta)
+  {
+    hsv2rgb(hue, sat, 1.0, r, g, b);
+    lightLED(r, g, b);
+    delay(50);
+    delta *= deltaRate;
+  }
+  delay(100);
+  delta = initDelta;
+  for (float sat = 0.0; sat < 1.0; sat += delta)
+  {
+    hsv2rgb(hue, sat, 1.0, r, g, b);
+    lightLED(r, g, b);
+    delay(50);
+    delta *= deltaRate;
+  }
+  delay(100);
 }
 
 unsigned int red, green, blue;
@@ -75,7 +112,10 @@ void loop()
   if (hue <= 180)
     ascending = true;
   
-  hsv2rgb(hue, 1.0, 1.0, red, green, blue);
+  if (hue % 360 == 0)
+    fadeToWhite(hue % 360);
+  
+  hsv2rgb(hue % 360, 1.0, 1.0, red, green, blue);
   lightLED(red, green, blue);
   delay(50);
   
