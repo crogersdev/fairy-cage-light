@@ -2,8 +2,6 @@ const unsigned int RED_PIN = 9;
 const unsigned int GREEN_PIN = 10;
 const unsigned int BLUE_PIN = 11;
 
-double fadeToWhiteDeltas[1000];
-
 void setup()
 {
   Serial.begin(9600);
@@ -12,16 +10,7 @@ void setup()
   pinMode(GREEN_PIN, OUTPUT);
   pinMode(BLUE_PIN, OUTPUT);
   
-  randomSeed(analogRead(0));
-  
-  double increment = .001;
-  for (int i = 0; i < 1000; ++i)
-  {
-    fadeToWhiteDeltas[i] = pow(increment, 4);
-    increment += .001;
-    Serial.print(fadeToWhiteDeltas[i]);
-    Serial.println("");
-  }
+  randomSeed(analogRead(0));  
 }
 
 void hsv2rgb(float h, float s, float v, unsigned int& r, unsigned int& g, unsigned int &b)
@@ -82,28 +71,32 @@ void hsv2rgb(float h, float s, float v, unsigned int& r, unsigned int& g, unsign
 
 void lightLED(const unsigned int r, const unsigned int g, const unsigned int b)
 {
-  analogWrite(RED_PIN, 255 - r);
-  analogWrite(GREEN_PIN, 255 - g);
-  analogWrite(BLUE_PIN, 255 - b);
+  analogWrite(RED_PIN, r);
+  analogWrite(GREEN_PIN, g);
+  analogWrite(BLUE_PIN, b);
 }
 
 void fadeToWhite(const unsigned int hue)
-{
+{  
   delay(100);
   unsigned int r, g, b;
-  
-  for (int i = 0; i < 1000; ++i)
+  const double DELTA_INIT = .00001;
+  double delta = DELTA_INIT;
+  for (double sat = 1.0; sat > 0.0; sat -= delta)
   {
-    hsv2rgb(hue, fadeToWhiteDeltas[i], 1.0, r, g, b);
+    hsv2rgb(hue, sat, 1.0, r, g, b);
     lightLED(r, g, b);
     delay(25);
+    delta = delta * 1.1;
   }
 
-  for (int i = 1000; i > 0; --i)
+  delta = .025;
+  for (double sat = 0.0; sat < 1.0; sat += delta)
   {
-    hsv2rgb(hue, fadeToWhiteDeltas[i], 1.0, r, g, b);
+    hsv2rgb(hue, sat, 1.0, r, g, b);
     lightLED(r, g, b);
     delay(25);
+    delta = delta * .999999999;
   }
   delay(100);
 }
