@@ -2,10 +2,12 @@ const unsigned int RED_PIN = 9;
 const unsigned int GREEN_PIN = 10;
 const unsigned int BLUE_PIN = 11;
 
+const unsigned int COLOR_FADE_INTERVAL = 150; // in msec
+const unsigned int FADE_TO_WHITE_PROBABILITY = .01;
+
 void setup()
 {
-  Serial.begin(9600);
-  Serial.print("beginning!");
+  //Serial.begin(9600);
   pinMode(RED_PIN, OUTPUT);
   pinMode(GREEN_PIN, OUTPUT);
   pinMode(BLUE_PIN, OUTPUT);
@@ -112,13 +114,16 @@ void loop()
     
   if (hue <= 180)
     ascending = true;
+
+  unsigned int val = FADE_TO_WHITE_PROBABILITY * 10000;
   
-  if (random(1000) < 10)
+  if (random(1000000) < val)
     fadeToWhite(hue % 360);
   
   hsv2rgb(hue % 360, 1.0, 1.0, red, green, blue);
   lightLED(red, green, blue);
-  delay(50);
+  
+  delay(COLOR_FADE_INTERVAL);
   
   if (ascending)
     hue++;
