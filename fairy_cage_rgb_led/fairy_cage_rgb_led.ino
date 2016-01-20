@@ -3,7 +3,7 @@ const unsigned int GREEN_PIN = 10;
 const unsigned int BLUE_PIN = 11;
 
 const unsigned int COLOR_FADE_INTERVAL = 150; // in msec
-const unsigned int FADE_TO_WHITE_PROBABILITY = .01;
+const unsigned double FADE_TO_WHITE_PROBABILITY = .01;
 
 void setup()
 {
